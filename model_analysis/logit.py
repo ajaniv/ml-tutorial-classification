@@ -1,3 +1,7 @@
+"""
+Logistic Regression (aka logit, MaxEnt) classifier.
+"""
+# pylint: disable=invalid-name
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import linear_model
@@ -6,10 +10,10 @@ from sklearn import linear_model
 xmin, xmax = -10, 10
 n_samples = 100
 np.random.seed(0)
-X = np.random.normal(size = n_samples)
+X = np.random.normal(size=n_samples)
 y = (X > 0).astype(np.float)
 X[X > 0] *= 4
-X += .3 * np.random.normal(size = n_samples)
+X += .3 * np.random.normal(size=n_samples)
 X = X[:, np.newaxis]
 
 # run the classifier
@@ -17,12 +21,13 @@ clf = linear_model.LogisticRegression(C=1e5)
 clf.fit(X, y)
 
 # and plot the result
-plt.figure(1, figsize = (4, 3))
+plt.figure(1, figsize=(4, 3))
 plt.clf()
 plt.scatter(X.ravel(), y, color='black', zorder=20)
 X_test = np.linspace(-10, 10, 300)
 
 def model(x):
+    """perform actual model calculation"""
     return 1 / (1 + np.exp(-x))
 
 # plot logit

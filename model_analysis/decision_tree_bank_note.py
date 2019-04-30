@@ -1,14 +1,23 @@
-# Using the Bank Note dataset
+"""
+Decision Tree Using the Bank Note dataset
+"""
+# pylint: disable=invalid-name
+import os
 from random import seed
 from random import randrange
 from csv import reader
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+data_dir = os.path.join(dir_path, "data")
+
 # Loading a CSV file
-filename ='data/data_banknote_authentication.csv'
-def load_csv(filename):
-    file = open(filename, "rt")
-    lines = reader(file)
-    dataset = list(lines)
+FILE_NAME = os.path.join(data_dir, 'data_banknote_authentication.csv')
+
+def load_csv(file_name):
+    """load csv file"""
+    with open(file_name, "rt") as file:
+        lines = reader(file)
+        dataset = list(lines)
     return dataset
 
 
@@ -35,7 +44,7 @@ def cross_validation_split(dataset, n_folds):
 def accuracy_metric(actual, predicted):
     """ Calculating accuracy percentage"""
     correct = 0
-    for i in range(len(actual)):
+    for i in range(len(actual)): # pylint: disable=consider-using-enumerate
         if actual[i] == predicted[i]:
             correct += 1
     return correct / float(len(actual)) * 100.0
@@ -70,7 +79,7 @@ def test_split(index, value, dataset):
         else:
             right.append(row)
     return left, right
-   
+
 
 def gini_index(groups, classes):
     """Calculating the Gini index for a split dataset"""
@@ -104,7 +113,7 @@ def get_split(dataset):
             if gini < b_score:
                 b_index, b_value, b_score, b_groups = index, row[index], gini, groups
     return {'index':b_index, 'value':b_value, 'groups':b_groups}
-   
+
 
 def to_terminal(group):
     """Creating a terminal node value"""
@@ -115,18 +124,18 @@ def to_terminal(group):
 def split(node, max_depth, min_size, depth):
     """Creating child splits for a node or make terminal"""
     left, right = node['groups']
-    del(node['groups'])
-    
+    del node['groups']
+
     # check for a no split
     if not left or not right:
         node['left'] = node['right'] = to_terminal(left + right)
         return
-       
+
     # check for max depth
     if depth >= max_depth:
         node['left'], node['right'] = to_terminal(left), to_terminal(right)
         return
-    
+
     # process left child
     if len(left) <= min_size:
         node['left'] = to_terminal(left)
@@ -139,28 +148,26 @@ def split(node, max_depth, min_size, depth):
     else:
         node['right'] = get_split(right)
         split(node['right'], max_depth, min_size, depth+1)
-   
+
 
 def build_tree(train, max_depth, min_size):
     """Building a decision tree"""
     root = get_split(train)
     split(root, max_depth, min_size, 1)
     return root
-   
+
 
 def predict(node, row):
     """Making a prediction with a decision tree"""
-    if row[node['index']] < node['value']:
+    if row[node['index']] < node['value']: # pylint: disable=no-else-return
         if isinstance(node['left'], dict):
             return predict(node['left'], row)
-        else:
-            return node['left']
+        return node['left']
     else:
         if isinstance(node['right'], dict):
             return predict(node['right'], row)
-        else:
-            return node['right']
-         
+        return node['right']
+
 
 def decision_tree(train, test, max_depth, min_size):
     """Classification and Regression Tree Algorithm"""
@@ -169,26 +176,28 @@ def decision_tree(train, test, max_depth, min_size):
     for row in test:
         prediction = predict(tree, row)
         predictions.append(prediction)
-    return(predictions)
-   
+    return predictions
+
 # Testing the Bank Note dataset
 seed(1)
 
-dataset = load_csv(filename)
+data = load_csv(FILE_NAME)
 
 # convert string attributes to integers
-for i in range(len(dataset[0])):
-    str_column_to_float(dataset, i)
-   
+for item in range(len(data[0])):
+    str_column_to_float(data, item)
+
 # evaluate algorithm
-n_folds = 5
-max_depth = 5
-min_size = 10
-scores = evaluate_algorithm(dataset, decision_tree, n_folds, max_depth, min_size)
-print('Scores: %s' % scores)
-print('Mean Accuracy: %.3f%%' % (sum(scores)/float(len(scores))))
+N_FOLDS = 5
+MAX_DEPTH = 5
+MIN_SIZE = 10
+the_scores = evaluate_algorithm(data, decision_tree, N_FOLDS, MAX_DEPTH, MIN_SIZE)
+print('Scores: %s' % the_scores)
+print('Mean Accuracy: %.3f%%' % (sum(the_scores)/float(len(the_scores))))
+
 
 """
-Scores: [96.35036496350365, 97.08029197080292, 97.44525547445255, 98.17518248175182, 97.44525547445255]
+Scores: [96.35036496350365, 97.08029197080292, 97.44525547445255,
+    98.17518248175182, 97.44525547445255]
 Mean Accuracy: 97.299%
-"""
+""" # pylint: disable=pointless-string-statement

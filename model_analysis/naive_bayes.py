@@ -1,108 +1,129 @@
+"""
+Naive bayes
+"""
+import os
 import csv
 import random
 import math
+# pylint: disable=invalid-name
 
-def loadCsv(filename):
+def load_csv(filename):
+    """Load csv file"""
     lines = csv.reader(open(filename, "rt"))
     dataset = list(lines)
-    for i in range(len(dataset)):
+    for i in range(len(dataset)): # pylint: disable=consider-using-enumerate
         dataset[i] = [float(x) for x in dataset[i]]
     return dataset
 
-def splitDataset(dataset, splitRatio):
-    trainSize = int(len(dataset) * splitRatio)
-    trainSet = []
+def split_dataset(dataset, split_ratio):
+    """split dataset"""
+    train_size = int(len(dataset) * split_ratio)
+    train_set = []
     copy = list(dataset)
-    while len(trainSet) < trainSize:
+    while len(train_set) < train_size:
         index = random.randrange(len(copy))
-        trainSet.append(copy.pop(index))
-    return [trainSet, copy]
+        train_set.append(copy.pop(index))
+    return [train_set, copy]
 
-def separateByClass(dataset):
+def separate_by_class(dataset):
+    """separate by class"""
     separated = {}
-    for i in range(len(dataset)):
+    for i in range(len(dataset)): # pylint: disable=consider-using-enumerate
         vector = dataset[i]
-        if (vector[-1] not in separated):
+        if vector[-1] not in separated:
             separated[vector[-1]] = []
         separated[vector[-1]].append(vector)
     return separated
 
-def mean(numbers):
+def calculate_mean(numbers):
+    """calculate the mean"""
     return sum(numbers)/float(len(numbers))
 
-def stdev(numbers):
-    avg = mean(numbers)
-    variance = sum([pow(x-avg,2) for x in numbers])/float(len(numbers)-1)
+def calculate_stdev(numbers):
+    """calculate stdev"""
+    avg = calculate_mean(numbers)
+    variance = sum([pow(x-avg, 2) for x in numbers])/float(len(numbers)-1)
     return math.sqrt(variance)
 
 def summarize(dataset):
-    summaries = [(mean(attribute), stdev(attribute)) for attribute in zip(*dataset)]
-    
+    """summarize"""
+    summaries = [(calculate_mean(attribute), calculate_stdev(attribute))
+                 for attribute in zip(*dataset)]
+
     return summaries
 
-def summarizeByClass(dataset):
-    separated = separateByClass(dataset)
+def summarize_by_class(dataset):
+    """summarize by class"""
+    separated = separate_by_class(dataset)
     summaries = {}
-    for classValue, instances in separated.items():
-        summaries[classValue] = summarize(instances)
+    for class_value, instances in separated.items():
+        summaries[class_value] = summarize(instances)
     return summaries
 
-def calculateProbability(x, mean, stdev):
+def calculate_probability(x, mean_value, stdev_value):
+    """calculate probability"""
     try:
-        divisor = 2*math.pow(stdev,2)
-        exponent = math.exp(-(math.pow(x-mean,2)/(divisor)))
+        divisor = 2*math.pow(stdev_value, 2)
+        exponent = math.exp(-(math. pow(x-mean_value, 2)/(divisor)))
     except ZeroDivisionError:
         return 0
-    return (1 / (math.sqrt(2*math.pi) * stdev)) * exponent
+    return (1 / (math.sqrt(2*math.pi) * stdev_value)) * exponent
 
-def calculateClassProbabilities(summaries, inputVector):
+def calculate_class_probabilities(summaries, inputVector):
+    """calculate class probabilities"""
     probabilities = {}
-    for classValue, classSummaries in summaries.items():
-        probabilities[classValue] = 1
-        for i in range(len(classSummaries)):
-            mean, stdev = classSummaries[i]
+    for class_value, class_summaries in summaries.items():
+        probabilities[class_value] = 1
+        for i in range(len(class_summaries)): # pylint: disable=consider-using-enumerate
+            mean_value, stdev_value = class_summaries[i]
             x = inputVector[i]
-#             if stdev == 0.0:
-#                 import pdb; pdb.set_trace()
-            probabilities[classValue] *= calculateProbability(x, mean,stdev)
+            probabilities[class_value] *= calculate_probability(x, mean_value, stdev_value)
     return probabilities
 
 def predict(summaries, inputVector):
-    probabilities = calculateClassProbabilities(summaries, inputVector)
-    bestLabel, bestProb = None, -1
-    for classValue, probability in probabilities.items():
-        if bestLabel is None or probability > bestProb:
-            bestProb = probability
-            bestLabel = classValue
-    return bestLabel
+    """predict"""
+    probabilities = calculate_class_probabilities(summaries, inputVector)
+    best_label, best_prob = None, -1
+    for class_value, probability in probabilities.items():
+        if best_label is None or probability > best_prob:
+            best_prob = probability
+            best_label = class_value
+    return best_label
 
-def getPredictions(summaries, testSet):
+def get_predictions(summaries, testSet):
+    """get predictions"""
     predictions = []
-    for i in range(len(testSet)):
+    for i in range(len(testSet)): # pylint: disable=consider-using-enumerate
         result = predict(summaries, testSet[i])
         predictions.append(result)
     return predictions
 
-def getAccuracy(testSet, predictions):
+def get_accuracy(test_set, predictions):
+    """get accuracy"""
     correct = 0
-    for i in range(len(testSet)):
-        if testSet[i][-1] == predictions[i]:
+    for i in range(len(test_set)): # pylint: disable=consider-using-enumerate
+        if test_set[i][-1] == predictions[i]:
             correct += 1
-    return (correct/float(len(testSet))) * 100.0
+    return (correct/float(len(test_set))) * 100.0
 
 def main():
-    filename = 'data/pima-indians-diabetes-data.csv'
-    splitRatio = 0.67
-    dataset = loadCsv(filename)
-    trainingSet, testSet = splitDataset(dataset, splitRatio)
-    print('Split {0} rows into train = {1} and test = {2} rows'.format(len(dataset), len(trainingSet), len(testSet)))
-    
+    """main function"""
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    data_dir = os.path.join(dir_path, "data")
+    filename = 'pima-indians-diabetes-data.csv'
+    split_ratio = 0.67
+    dataset = load_csv(os.path.join(data_dir, filename))
+    training_set, test_set = split_dataset(dataset, split_ratio)
+    print('Split {0} rows into train = {1} and test = {2} rows'.format(len(dataset),
+                                                                       len(training_set),
+                                                                       len(test_set)))
+
     # prepare model
-    summaries = summarizeByClass(trainingSet)
-    
+    summaries = summarize_by_class(training_set)
+
     # test model
-    predictions = getPredictions(summaries, testSet)
-    accuracy = getAccuracy(testSet, predictions)
+    predictions = get_predictions(summaries, test_set)
+    accuracy = get_accuracy(test_set, predictions)
     print('Accuracy: {0}%'.format(accuracy))
 
 main()

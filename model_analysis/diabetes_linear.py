@@ -1,3 +1,7 @@
+"""
+Linear regression
+"""
+# pylint: disable=invalid-name
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import datasets, linear_model
@@ -7,15 +11,15 @@ from sklearn.metrics import mean_squared_error, r2_score
 diabetes = datasets.load_diabetes()
 
 # Use only one feature
-diabetes_X = diabetes.data[:, np.newaxis, 2]
+diabetes_X = diabetes.data[:, np.newaxis, 2] # pylint: disable=no-member
 
 # Split the data into training/testing sets
 diabetes_X_train = diabetes_X[:-30]
 diabetes_X_test = diabetes_X[-30:]
 
 # Split the targets into training/testing sets
-diabetes_y_train = diabetes.target[:-30]
-diabetes_y_test = diabetes.target[-30:]
+diabetes_y_train = diabetes.target[:-30] # pylint: disable=no-member
+diabetes_y_test = diabetes.target[-30:] # pylint: disable=no-member
 
 # Create linear regression object
 regr = linear_model.LinearRegression()
@@ -30,15 +34,15 @@ diabetes_y_pred = regr.predict(diabetes_X_test)
 print('Coefficients: \n', regr.coef_)
 
 # The mean squared error
-print("Mean squared error: %.2f" 
+print("Mean squared error: %.2f"
       % mean_squared_error(diabetes_y_test, diabetes_y_pred))
 
 # Explained variance score: 1 is perfect prediction
 print('Variance score: %.2f' % r2_score(diabetes_y_test, diabetes_y_pred))
 
 # Plot outputs
-plt.scatter(diabetes_X_test, diabetes_y_test, color = 'black')
-plt.plot(diabetes_X_test, diabetes_y_pred, color = 'blue', linewidth = 3)
+plt.scatter(diabetes_X_test, diabetes_y_test, color='black')
+plt.plot(diabetes_X_test, diabetes_y_pred, color='blue', linewidth=3)
 plt.xticks(())
 plt.yticks(())
 plt.show()

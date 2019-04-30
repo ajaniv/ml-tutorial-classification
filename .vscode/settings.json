@@ -1,0 +1,5 @@
+{
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.pythonPath": "/Users/ajaniv/projects/machine_tutorial/first/venv/python3.7/bin/python"
+}
